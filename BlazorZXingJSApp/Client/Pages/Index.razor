@@ -12,8 +12,8 @@
             Title="Scanzor"
             VideoWidth="720"
             VideoHeight="540"
-            StreamWidth="@StreamWidth"
-            StreamHeight="@StreamHeight"
+            StreamWidth="@_streamWidth"
+            StreamHeight="@_streamHeight"
             OnBarcodeReceived="LocalReceivedBarcodeText"
             OnErrorReceived="LocalReceivedError"/>
     </div>
@@ -23,19 +23,19 @@
             <div>(stop and start the stream to pickup new resolution)</div>
             <div>
                 <label>Width:
-                    <input style="width: 7em" @bind="StreamWidth" />
+                    <input style="width: 7em" @bind="_streamWidth" />
                 </label>
             </div>
             <div>
                 <label>Height:
-                    <input style="width: 7em" @bind="StreamHeight" />
+                    <input style="width: 7em" @bind="_streamHeight" />
                 </label>
             </div>
             <button @onclick="() => _reader.UpdateResolution()" class="btn btn-outline-primary">Update stream</button>
         </div>
         <div class="mt-1">
             <div><b>Custom Result</b></div>
-                <div class="alert alert-success" style="word-break: break-all;" role="alert">@(!string.IsNullOrWhiteSpace(LocalBarcodeText) ? @LocalBarcodeText : "Results will be here")</div>
+                <div class="alert alert-success" style="word-break: break-all;" role="alert">@(!string.IsNullOrWhiteSpace(_localBarcodeText) ? _localBarcodeText : "Results will be here")</div>
         </div>
         <div class="mt-1">
             <div><b>Errors</b></div>

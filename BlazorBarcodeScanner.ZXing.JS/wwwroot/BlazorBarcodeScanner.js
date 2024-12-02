@@ -43,13 +43,17 @@ async function mediaStreamSetTorch(track, onOff) {
    * Checks if the stream has torch support.
    */
 function mediaStreamIsTorchCompatible(stream) {
-
-    const tracks = stream.getVideoTracks();
-
-    for (const track of tracks) {
-        if (mediaStreamIsTorchCompatibleTrack(track)) {
-            return true;
+    try {
+        const tracks = stream.getVideoTracks();
+    
+        for (const track of tracks) {
+            if (mediaStreamIsTorchCompatibleTrack(track)) {
+                return true;
+            }
         }
+    } catch (err) {
+        console.log(err);
+        return false;
     }
 
     return false;
@@ -59,13 +63,20 @@ function mediaStreamIsTorchCompatible(stream) {
  * Checks if the stream has torch support and return track has torch capability.
  */
 function mediaStreamGetTorchCompatibleTrack(stream) {
+    if (typeof(stream) === 'undefined')
+        return null;
+    
+    try {
+        const tracks = stream.getVideoTracks();
 
-    const tracks = stream.getVideoTracks();
-
-    for (const track of tracks) {
-        if (mediaStreamIsTorchCompatibleTrack(track)) {
-            return track;
+        for (const track of tracks) {
+            if (mediaStreamIsTorchCompatibleTrack(track)) {
+                return track;
+            }
         }
+    } catch (err) {
+        console.log(err);
+        return null;
     }
 
     return null;
@@ -76,6 +87,9 @@ function mediaStreamGetTorchCompatibleTrack(stream) {
    * @param track The media stream track that will be checked for compatibility.
    */
   function mediaStreamIsTorchCompatibleTrack(track) {
+      if (typeof(track) === 'undefined')
+          return false;
+      
     try {
         const capabilities = track.getCapabilities();
         return 'torch' in capabilities;
@@ -153,33 +167,33 @@ window.BlazorBarcodeScanner = {
       /*  this.codeReader.stream.getVideoTracks()[0].applyConstraints({
             advanced: [{ torch: true }] // or false to turn off the torch
         }); */
-        console.log(`Started continous decode from camera with id ${this.selectedDeviceId}`);
-        Helpers.decodingStarted(this.selectedDeviceId)
+        console.log(`Started continuous decode from camera with id ${this.selectedDeviceId}`);
+        await Helpers.decodingStarted(this.selectedDeviceId)
     },
-    stopDecoding: function () {
+    stopDecoding: async function () {
         this.codeReader.reset();
         Helpers.receiveBarcode('')
             .then(message => {
                 console.log(message);
             });
-        Helpers.decodingStopped(this.selectedDeviceId)
+        await Helpers.decodingStopped(this.selectedDeviceId)
         console.log('Reset camera stream.');
     },
-    setTorchOn: function () {
+    setTorchOn: async function () {
         if (mediaStreamIsTorchCompatible(this.codeReader.stream)) {
-            mediaStreamSetTorch(this.codeReader.stream.getVideoTracks()[0], true);
+            await mediaStreamSetTorch(this.codeReader.stream.getVideoTracks()[0], true);
         }
     },
-    setTorchOff() {
+    async setTorchOff() {
         if (mediaStreamIsTorchCompatible(this.codeReader.stream)) {
-            mediaStreamSetTorch(this.codeReader.stream.getVideoTracks()[0], false);
+            await mediaStreamSetTorch(this.codeReader.stream.getVideoTracks()[0], false);
         }
     },
-    toggleTorch() {
+    async toggleTorch() {
         let track = mediaStreamGetTorchCompatibleTrack(this.codeReader.stream);
         if (track !== null) {
             let torchStatus = !track.getSettings().torch;
-            mediaStreamSetTorch(track, torchStatus);
+            await mediaStreamSetTorch(track, torchStatus);
         }
     },
     capture: async function (type, canvas) {

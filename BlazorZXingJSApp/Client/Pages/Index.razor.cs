@@ -3,77 +3,76 @@ using Microsoft.AspNetCore.Components.Web;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace BlazorZXingJSApp.Client.Pages
+namespace BlazorZXingJSApp.Client.Pages;
+
+public partial class Index
 {
-    public partial class Index
+    private BarcodeReader _reader;
+    private int _streamWidth = 720;
+    private int _streamHeight = 540;
+
+    private string _localBarcodeText;
+    private int _currentVideoSourceIdx;
+
+    private string _imgSrc = string.Empty;
+    private string _lastError = string.Empty;
+
+    protected override void OnAfterRender(bool firstRender)
     {
-        private BarcodeReader _reader;
-        private int StreamWidth = 720;
-        private int StreamHeight = 540;
+        base.OnAfterRender(firstRender);
 
-        private string LocalBarcodeText;
-        private int _currentVideoSourceIdx = 0;
-
-        private string _imgSrc = string.Empty;
-        private string _lastError = string.Empty;
-
-        protected override void OnAfterRender(bool firstRender)
+        if (firstRender && !string.IsNullOrWhiteSpace(_reader.SelectedVideoInputId))
         {
-            base.OnAfterRender(firstRender);
+            _currentVideoSourceIdx = SourceIndexFromId();
+        }
+    }
 
-            if (firstRender && !string.IsNullOrWhiteSpace(_reader.SelectedVideoInputId))
+    private int SourceIndexFromId()
+    {
+        var inputs = _reader.VideoInputDevices.ToList();
+        int result;
+        for (result = 0; result < inputs.Count; result++)
+        {
+            if (inputs[result].DeviceId.Equals(_reader.SelectedVideoInputId))
             {
-                _currentVideoSourceIdx = SourceIndexFromId();
+                break;
             }
         }
+        return result;
+    }
 
-        private int SourceIndexFromId()
+    private async Task LocalReceivedBarcodeText(BarcodeReceivedEventArgs args)
+    {
+        _localBarcodeText = args.BarcodeText;
+        await _reader.StopDecoding();
+    }
+
+    private void LocalReceivedError(ErrorReceivedEventArgs args)
+    {
+        _lastError = args.Message;
+    }
+
+    private async Task CapturePicture()
+    {
+        _imgSrc = await _reader.Capture();
+        StateHasChanged();
+    }
+
+    private async Task OnVideoSourceNext(MouseEventArgs args)
+    {
+        var inputs = _reader.VideoInputDevices.ToList();
+
+        if (inputs.Count == 0)
         {
-            var inputs = _reader.VideoInputDevices.ToList();
-            int result;
-            for (result = 0; result < inputs.Count; result++)
-            {
-                if (inputs[result].DeviceId.Equals(_reader.SelectedVideoInputId))
-                {
-                    break;
-                }
-            }
-            return result;
+            return;
         }
 
-        private async Task LocalReceivedBarcodeText(BarcodeReceivedEventArgs args)
+        _currentVideoSourceIdx++;
+        if (_currentVideoSourceIdx >= inputs.Count)
         {
-            this.LocalBarcodeText = args.BarcodeText;
-            await _reader.StopDecoding();
+            _currentVideoSourceIdx = 0;
         }
 
-        private void LocalReceivedError(ErrorReceivedEventArgs args)
-        {
-            this._lastError = args.Message;
-        }
-
-        private async Task CapturePicture()
-        {
-            _imgSrc = await _reader.Capture();
-            StateHasChanged();
-        }
-
-        private async Task OnVideoSourceNext(MouseEventArgs args)
-        {
-            var inputs = _reader.VideoInputDevices.ToList();
-
-            if (inputs.Count == 0)
-            {
-                return;
-            }
-
-            _currentVideoSourceIdx++;
-            if (_currentVideoSourceIdx >= inputs.Count)
-            {
-                _currentVideoSourceIdx = 0;
-            }
-
-            await _reader.SelectVideoInput(inputs[_currentVideoSourceIdx]);
-        }
+        await _reader.SelectVideoInput(inputs[_currentVideoSourceIdx]);
     }
 }

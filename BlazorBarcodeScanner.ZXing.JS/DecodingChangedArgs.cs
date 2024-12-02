@@ -1,8 +1,7 @@
-﻿namespace BlazorBarcodeScanner.ZXing.JS
+﻿namespace BlazorBarcodeScanner.ZXing.JS;
+
+public class DecodingChangedArgs
 {
-    public class DecodingChangedArgs
-    {
-        public BarcodeReader Sender;
-        public bool IsDecoding;
-    }
+    public BarcodeReader Sender;
+    public bool IsDecoding;
 }

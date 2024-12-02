@@ -31,25 +31,34 @@ class Helpers {
 window.Helpers = Helpers;
 
 async function mediaStreamSetTorch(track, onOff) {
-    await track.applyConstraints({
-        advanced: [{
-            fillLightMode: onOff ? 'flash' : 'off',
-            torch: !!onOff,
-        }],
-    });
+    try {
+        await track.applyConstraints({
+            advanced: [{
+                fillLightMode: onOff ? 'flash' : 'off',
+                torch: !!onOff,
+            }],
+        });
+    }
+    catch (err) {
+        // DO NOTHING
+    }
 }
 
 /**
  * Checks if the stream has torch support.
  */
 function mediaStreamIsTorchCompatible(stream) {
+    try {
+        const tracks = stream.getVideoTracks();
 
-    const tracks = stream.getVideoTracks();
-
-    for (const track of tracks) {
-        if (mediaStreamIsTorchCompatibleTrack(track)) {
-            return true;
+        for (const track of tracks) {
+            if (mediaStreamIsTorchCompatibleTrack(track)) {
+                return true;
+            }
         }
+    } catch (err) {
+        console.log(err);
+        return false;
     }
 
     return false;
@@ -59,13 +68,17 @@ function mediaStreamIsTorchCompatible(stream) {
  * Checks if the stream has torch support and return track has torch capability.
  */
 function mediaStreamGetTorchCompatibleTrack(stream) {
+    try {
+        const tracks = stream.getVideoTracks();
 
-    const tracks = stream.getVideoTracks();
-
-    for (const track of tracks) {
-        if (mediaStreamIsTorchCompatibleTrack(track)) {
-            return track;
+        for (const track of tracks) {
+            if (mediaStreamIsTorchCompatibleTrack(track)) {
+                return track;
+            }
         }
+    } catch (err) {
+        console.log(err);
+        return null;
     }
 
     return null;
@@ -88,7 +101,7 @@ function mediaStreamIsTorchCompatibleTrack(track) {
     }
 }
 
-function initZxing(canvas, constraints, video, callbackFn){
+function initZxing(canvas, constraints, video, callbackFn) {
     var zxing = ZXing().then(function (instance) {
         zxing = instance; // this line is supposedly not required but with current emsdk it is :-/
     });
@@ -99,7 +112,7 @@ function initZxing(canvas, constraints, video, callbackFn){
     // const canvas = document.getElementById("video-canvas");
     const resultElement = document.getElementById("result");
 
-    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    const ctx = canvas.getContext("2d", {willReadFrequently: true});
     // const video = document.createElement("video");
     //video.setAttribute("id", "video");
     //video.setAttribute("width", canvas.width);
@@ -119,7 +132,7 @@ function initZxing(canvas, constraints, video, callbackFn){
             zxing._free(buffer);
             return result;
         } else {
-            return { error: "ZXing not yet initialized" };
+            return {error: "ZXing not yet initialized"};
         }
     }
 
@@ -153,7 +166,7 @@ function initZxing(canvas, constraints, video, callbackFn){
         if (code.format) {
             resultElement.innerText = code.format + ": " + escapeTags(code.text);
             drawResult(code)
-            callbackFn({text : escapeTags(code.text)});
+            callbackFn({text: escapeTags(code.text)});
         } else {
             resultElement.innerText = "No barcode found";
         }
@@ -173,14 +186,15 @@ function initZxing(canvas, constraints, video, callbackFn){
                 console.error("Error accessing camera:", error);
             });
     };
-/*
-    cameraSelector.addEventListener("change", function () {
-        updateVideoStream(this.value);
-    });
-    */
+    /*
+        cameraSelector.addEventListener("change", function () {
+            updateVideoStream(this.value);
+        });
+        */
 
     updateVideoStream();
-    }
+}
+
 const codeReader = {
     stopStreams: function () {
         if (this.stream) {
@@ -199,7 +213,7 @@ const codeReader = {
     decodeFromConstraints: async function (canvas, constraints, videoSource, callbackFn) {
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
         const video = await this.attachStreamToVideo(stream, videoSource);
-        initZxing(canvas, constraints, video,  callbackFn);
+        initZxing(canvas, constraints, video, callbackFn);
         return;
     }
 };
@@ -221,16 +235,19 @@ async function listVideoInputDevices() {
         const label = device.label || `Video device ${videoDevices.length + 1}`;
         const groupId = device.groupId;
 
-        const videoDevice = { deviceId, label, kind, groupId };
+        const videoDevice = {deviceId, label, kind, groupId};
 
         videoDevices.push(videoDevice);
     }
 
     return videoDevices;
 }
+
 window.BlazorBarcodeScanner = {
     codeReader: codeReader,
-    listVideoInputDevices: async function () { return await listVideoInputDevices(); },
+    listVideoInputDevices: async function () {
+        return await listVideoInputDevices();
+    },
     selectedDeviceId: undefined,
     setSelectedDeviceId: function (deviceId) {
         this.selectedDeviceId = deviceId;
@@ -252,13 +269,12 @@ window.BlazorBarcodeScanner = {
 
         if (!this.selectedDeviceId) {
             videoConstraints["facingMode"] = 'environment';
-        }
-        else {
-            videoConstraints["deviceId"] = { exact: this.selectedDeviceId };
+        } else {
+            videoConstraints["deviceId"] = {exact: this.selectedDeviceId};
         }
 
-        if (this.streamWidth) videoConstraints["width"] = { ideal: this.streamWidth };
-        if (this.streamHeight) videoConstraints["height"] = { ideal: this.streamHeight };
+        if (this.streamWidth) videoConstraints["width"] = {ideal: this.streamWidth};
+        if (this.streamHeight) videoConstraints["height"] = {ideal: this.streamHeight};
 
         return videoConstraints;
     },
@@ -266,10 +282,10 @@ window.BlazorBarcodeScanner = {
         let videoConstraints = this.getVideoConstraints();
 
         console.log("Starting decoding with " + videoConstraints);
-        
+
         let videoCanvas = document.getElementById("video-canvas");//TODO Expose canvas reference from C# library
 
-        await this.codeReader.decodeFromConstraints(videoCanvas, { video: videoConstraints }, video, (result, err) => {
+        await this.codeReader.decodeFromConstraints(videoCanvas, {video: videoConstraints}, video, (result, err) => {
             if (result) {
                 if (this.lastPictureDecodedFormat) {
                     let captureCanvas = document.getElementsById('capture');//TODO Expose canvas reference from C# library
@@ -299,32 +315,32 @@ window.BlazorBarcodeScanner = {
               advanced: [{ torch: true }] // or false to turn off the torch
           }); */
         console.log(`Started continous decode from camera with id ${this.selectedDeviceId}`);
-        Helpers.decodingStarted(this.selectedDeviceId)
+        await Helpers.decodingStarted(this.selectedDeviceId)
     },
-    stopDecoding: function () {
-        this.codeReader.reset();
+    stopDecoding: async function () {
+        this.codeReader.stopStreams();
         Helpers.receiveBarcode('')
             .then(message => {
                 console.log(message);
             });
-        Helpers.decodingStopped(this.selectedDeviceId)
+        await Helpers.decodingStopped(this.selectedDeviceId)
         console.log('Reset camera stream.');
     },
-    setTorchOn: function () {
+    setTorchOn: async function () {
         if (mediaStreamIsTorchCompatible(this.codeReader.stream)) {
-            mediaStreamSetTorch(this.codeReader.stream.getVideoTracks()[0], true);
+            await mediaStreamSetTorch(this.codeReader.stream.getVideoTracks()[0], true);
         }
     },
-    setTorchOff() {
+    async setTorchOff() {
         if (mediaStreamIsTorchCompatible(this.codeReader.stream)) {
-            mediaStreamSetTorch(this.codeReader.stream.getVideoTracks()[0], false);
+            await mediaStreamSetTorch(this.codeReader.stream.getVideoTracks()[0], false);
         }
     },
-    toggleTorch() {
+    async toggleTorch() {
         let track = mediaStreamGetTorchCompatibleTrack(this.codeReader.stream);
         if (track !== null) {
             let torchStatus = !track.getSettings().torch;
-            mediaStreamSetTorch(track, torchStatus);
+            await mediaStreamSetTorch(track, torchStatus);
         }
     },
     capture: async function (type, canvas) {

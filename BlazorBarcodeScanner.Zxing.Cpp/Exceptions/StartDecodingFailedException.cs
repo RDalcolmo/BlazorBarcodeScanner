@@ -1,9 +1,8 @@
-﻿namespace BlazorBarcodeScanner.ZXing.Cpp.Exceptions
+﻿namespace BlazorBarcodeScanner.ZXing.Cpp.Exceptions;
+
+public class StartDecodingFailedException : Exception
 {
-    public class StartDecodingFailedException : Exception
+    public StartDecodingFailedException(string message, Exception e) : base(message, e)
     {
-        public StartDecodingFailedException(string message, Exception e) : base(message, e)
-        {
-        }
     }
 }

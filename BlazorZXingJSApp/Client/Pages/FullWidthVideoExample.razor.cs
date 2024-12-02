@@ -2,54 +2,49 @@
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace BlazorZXingJSApp.Client.Pages
+namespace BlazorZXingJSApp.Client.Pages;
+
+public partial class FullWidthVideoExample
 {
-    public partial class FullWidthVideoExample
+    private BarcodeReader _reader;
+    private const int StreamWidth = 720;
+    private const int StreamHeight = 540;
+
+    private string _localBarcodeText;
+
+    protected override void OnAfterRender(bool firstRender)
     {
-        private BarcodeReader _reader;
-        private int StreamWidth = 720;
-        private int StreamHeight = 540;
+        base.OnAfterRender(firstRender);
 
-        private string LocalBarcodeText;
-        private int _currentVideoSourceIdx = 0;
-
-        private string _imgSrc = string.Empty;
-
-        protected override void OnAfterRender(bool firstRender)
+        if (firstRender)
         {
-            base.OnAfterRender(firstRender);
-
-            if (firstRender)
+            if (!string.IsNullOrWhiteSpace(_reader.SelectedVideoInputId))
             {
-                if (!string.IsNullOrWhiteSpace(_reader.SelectedVideoInputId))
-                {
-                    _currentVideoSourceIdx = SourceIndexFromId();
-                }
+                SourceIndexFromId();
             }
         }
+    }
 
-        private int SourceIndexFromId()
+    private void SourceIndexFromId()
+    {
+        var inputs = _reader.VideoInputDevices.ToList();
+        int result;
+        for (result = 0; result < inputs.Count; result++)
         {
-            var inputs = _reader.VideoInputDevices.ToList();
-            int result;
-            for (result = 0; result < inputs.Count; result++)
+            if (inputs[result].DeviceId.Equals(_reader.SelectedVideoInputId))
             {
-                if (inputs[result].DeviceId.Equals(_reader.SelectedVideoInputId))
-                {
-                    break;
-                }
+                break;
             }
-            return result;
         }
+    }
 
-        private async Task LocalReceivedBarcodeText(BarcodeReceivedEventArgs args)
-        {
-            await InvokeAsync(async () => {
-                this.LocalBarcodeText = args.BarcodeText;
+    private async Task LocalReceivedBarcodeText(BarcodeReceivedEventArgs args)
+    {
+        await InvokeAsync(async () => {
+            _localBarcodeText = args.BarcodeText;
                 
-                StateHasChanged();
-                await _reader.StopDecoding();
-            });
-        }
+            StateHasChanged();
+            await _reader.StopDecoding();
+        });
     }
 }

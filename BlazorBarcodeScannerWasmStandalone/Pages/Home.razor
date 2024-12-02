@@ -11,8 +11,8 @@
                                                          Title="Scanzor"
                                                          VideoWidth="720"
                                                          VideoHeight="540"
-                                                         StreamWidth="@StreamWidth"
-                                                         StreamHeight="@StreamHeight"
+                                                         StreamWidth="@_streamWidth"
+                                                         StreamHeight="@_streamHeight"
                                                          OnBarcodeReceived="LocalReceivedBarcodeText"
                                                          OnErrorReceived="LocalReceivedError" />
         </div>
@@ -23,20 +23,20 @@
                 <div>
                     <label>
                         Width:
-                        <input style="width: 7em" @bind="StreamWidth" />
+                        <input style="width: 7em" @bind="_streamWidth" />
                     </label>
                 </div>
                 <div>
                     <label>
                         Height:
-                        <input style="width: 7em" @bind="StreamHeight" />
+                        <input style="width: 7em" @bind="_streamHeight" />
                     </label>
                 </div>
-                <button @onclick="() => _reader.UpdateResolution()" class="btn btn-outline-primary">Update stream</button>
+                <button @onclick="UpdateResolution" class="btn btn-outline-primary">Update stream</button>
             </div>
             <div class="mt-1">
                 <div><b>Custom Result</b></div>
-                <div class="alert alert-success" style="word-break: break-all;" role="alert">@(!string.IsNullOrWhiteSpace(LocalBarcodeText) ? @LocalBarcodeText : "Results will be here")</div>
+                <div class="alert alert-success" style="word-break: break-all;" role="alert">@(!string.IsNullOrWhiteSpace(_localBarcodeText) ? _localBarcodeText : "Results will be here")</div>
             </div>
             <div class="mt-1">
                 <div><b>Errors</b></div>
@@ -45,11 +45,11 @@
             <div class="mt-1">
                 <b>Custom Controls</b>
                 <div>
-                    <button @onclick="() => _reader.StartDecoding()" class="btn btn-outline-primary">Start</button>
-                    <button @onclick="() => _reader.StopDecoding()" class="btn btn-outline-danger">Stop</button>
-                    <button @onclick="() => _reader.ToggleTorch()" class="btn btn-outline-warning">Toggle Torch</button>
-                    <button @onclick="() => _reader.TorchOn()" class="btn btn-outline-secondary">Torch On</button>
-                    <button @onclick="() => _reader.TorchOff()" class="btn btn-outline-danger">Torch Off</button>
+                    <button @onclick="StartDecoding" class="btn btn-outline-primary">Start</button>
+                    <button @onclick="StopDecoding" class="btn btn-outline-danger">Stop</button>
+                    <button @onclick="ToggleTorch" class="btn btn-outline-warning">Toggle Torch</button>
+                    <button @onclick="TorchOn" class="btn btn-outline-secondary">Torch On</button>
+                    <button @onclick="TorchOff" class="btn btn-outline-danger">Torch Off</button>
                 </div>
             </div>
 

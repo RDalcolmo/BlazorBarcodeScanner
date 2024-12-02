@@ -1,13 +1,11 @@
-﻿@using Microsoft.JSInterop
-
-<section class="zxing-container">
+﻿<section class="zxing-container">
     @if (!string.IsNullOrWhiteSpace(Title))
     {
         <h3 class="zxing-title">@Title</h3>
     }
     @if (!string.IsNullOrWhiteSpace(ErrorMessage))
     {
-        <div class="alert alert-danger" role="alert" >
+        <div class="alert alert-danger" role="alert">
             @ErrorMessage
         </div>
     }
@@ -43,14 +41,15 @@
     }
 
     <div class="zxing-video-container">
-        <canvas id="video-canvas" width="@VideoWidth" height="@VideoHeight"> 
-        @if (FullWidthVideo)
-        {
-            <video @ref="_video"></video>
-        } else
-        {
-            <video @ref="_video" width="@VideoWidth" height="@VideoHeight"></video>
-        }
+        <canvas id="video-canvas" width="@VideoWidth" height="@VideoHeight">
+            @if (FullWidthVideo)
+            {
+                <video @ref="_video"></video>
+            }
+            else
+            {
+                <video @ref="_video" width="@VideoWidth" height="@VideoHeight"></video>
+            }
         </canvas>
 
         <div id="result"></div>
@@ -60,7 +59,7 @@
 
     @if (ShowVideoDeviceList)
     {
-        @if (_videoInputDevices == null)
+        @if (!VideoInputDevices.Any())
         {
             <p>@TextWithoutDevices</p>
         }
@@ -70,14 +69,14 @@
                 <label>
                     @LabelVideoDeviceListText
                     <select class="zxing-video-select" @onchange="OnVideoInputSourceChanged">
-                        @foreach (var videoInputDevice in _videoInputDevices)
+                        @foreach (var videoInputDevice in VideoInputDevices)
                         {
-                            <option value="@videoInputDevice.DeviceId" selected="@(SelectedVideoInputId == @videoInputDevice.DeviceId)">@videoInputDevice.Label</option>
+                            <option value="@videoInputDevice.DeviceId"
+                                    selected="@(SelectedVideoInputId == videoInputDevice.DeviceId)">@videoInputDevice.Label</option>
                         }
                     </select>
                 </label>
             </div>
-
         }
     }
 
@@ -88,5 +87,5 @@
             <div class="zxing-result" style="word-break: break-all;">@BarcodeText</div>
         </div>
     }
-    
+
 </section>

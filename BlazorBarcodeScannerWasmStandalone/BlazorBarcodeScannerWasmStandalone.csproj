@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BlazorBarcodeScanner.Zxing.Cpp\BlazorBarcodeScanner.ZXing.Cpp.csproj" />
+    <ProjectReference Include="..\BlazorZXingJSApp\Shared\BlazorZXingJSApp.Shared.csproj" />
   </ItemGroup>
 
 </Project>
